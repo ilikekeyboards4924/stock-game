@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>stock game</title>
+</head>
+<body>
+  <canvas width="800" height="800" id="canvas"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const c = canvas.getContext('2d');
+    const color = (r,g,b) => { c.fillStyle = `rgb(${r},${g},${b})`; c.strokeStyle = `rgb(${r},${g},${b})`; }
+    let frameCounter = 0;
+
+    function random(min, max) { // generates random *integers*
+      return Math.floor(Math.random() * (Math.abs(max) + Math.abs(min))) + min;
+    }
+
+    let offsetX = 0; // how much the graph is offset to the left
+    let offsetY = Math.floor(canvas.height/2); // the line between where the graph is positive and negative
+    let offsetSize = 15;
+
+    let stockSize = 5;
+    let stocks = [];
+    for (let i=0;i<25;i++) { // add 25 random points to the stocks array
+      stocks.push({ x: i * offsetSize, y: random(-Math.floor(canvas.height/2), Math.floor(canvas.height/2)) });
+    }
+    
+    function game() {
+      // drawing
+      color(0,0,0);
+      c.fillRect(0,0,canvas.width,canvas.height);
+
+      for (let i=0;i<stocks.length;i++) {
+        if (i+1 < stocks.length) {
+          color(255,255,0);
+          c.fillRect(stocks[i].x - Math.floor(stockSize/2) + offsetX, stocks[i].y - Math.floor(stockSize/2) + offsetY, stockSize, stockSize); // draw the point
+          
+          stocks[i].y > stocks[i+1].y ? color(0,255,0) : color(255,0,0); // if the difference is positive, line is green, if else, line is red
+          c.beginPath();
+          c.moveTo(stocks[i].x + offsetX, stocks[i].y + offsetY); // starting point for line
+          c.lineTo(stocks[i+1].x + offsetX, stocks[i+1].y + offsetY); // ending point for line
+          c.stroke();
+        }
+      }
+
+      color(127,127,127);
+      c.fillRect(0, offsetY, canvas.height, 1);
+
+      if (frameCounter%30==0) offsetX -= 5; // offset the graph every 30 frames
+
+      if (stocks[0].x + offsetX + 15 < 0) { // if the point goes off screen
+        stocks.splice(0, 1); // remove first point
+        stocks.push({ x: stocks.length * offsetSize - offsetX, y: random(-Math.floor(canvas.height/2), Math.floor(canvas.height/2)) }); // add new point at the end
+      }
+    }
+
+    setInterval(() => {
+      game();
+      frameCounter += 1;
+    }, 1000/60);
+  </script>
+</body>
+</html>
